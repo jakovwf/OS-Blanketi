@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <pthread.h>
 
+//DRUGA JE NAZIV ZATO STO NISAM LEPO PROCITAO ZADATAK, TREBA SAMO JEDNA NIT DA SE NAPRAVI A NE
+//DVE, SAMO MAIN NIT I JEDNA DODATNA...
+
+
 pthread_t prvaNit, drugaNit;
 pthread_mutex_t mut;
 pthread_cond_t cond;
@@ -11,29 +15,7 @@ pthread_cond_t cond;
 int br = 0;
 int spremno = 0;
 
-void* prva(void* atr) {
-    while (1) {
-        pthread_mutex_lock(&mut);
 
-        // cekaj dok druga nit ne zavrsi
-        while (spremno)
-            pthread_cond_wait(&cond, &mut);
-
-        printf("\nUnesi broj (999 za izlaz): ");
-        scanf("%d", &br);
-
-        spremno = 1;
-        pthread_cond_signal(&cond);
-
-        if (br == 999) {
-            pthread_mutex_unlock(&mut);
-            break;
-        }
-
-        pthread_mutex_unlock(&mut);
-    }
-    return NULL;
-}
 
 void* druga(void* atr) {
     while (1) {
@@ -65,10 +47,31 @@ int main() {
     pthread_mutex_init(&mut, NULL);
     pthread_cond_init(&cond, NULL);
 
-    pthread_create(&prvaNit, NULL, prva, NULL);
+
     pthread_create(&drugaNit, NULL, druga, NULL);
 
-    pthread_join(prvaNit, NULL);
+    while (1) {
+        pthread_mutex_lock(&mut);
+
+        // cekaj dok druga nit ne zavrsi
+        while (spremno)
+            pthread_cond_wait(&cond, &mut);
+
+        printf("\nUnesi broj (999 za izlaz): ");
+        scanf("%d", &br);
+
+        spremno = 1;
+        pthread_cond_signal(&cond);
+
+        if (br == 999) {
+            pthread_mutex_unlock(&mut);
+            break;
+        }
+
+        pthread_mutex_unlock(&mut);
+    }
+    return NULL;
+
     pthread_join(drugaNit, NULL);
 
     pthread_mutex_destroy(&mut);
