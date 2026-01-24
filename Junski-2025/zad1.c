@@ -8,6 +8,8 @@
 
 #define SIZE 4
 
+
+
 int buffer[SIZE];
 int suma=0;
 
@@ -16,7 +18,7 @@ sem_t drugaNit;
 
 void* brojevi(void* arg){
     (void)arg;
-
+    srand(time(0));
     while(1){
         sem_wait(&drugaNit);
 
@@ -45,9 +47,9 @@ int main(void){
         for(int i=0;i<SIZE;i++)
             suma+=buffer[i];
             if(suma<50)
-                printf("Suma je manja od 50 %d", suma);
+                printf("Suma je manja od 50 %d\n", suma);
             else
-            printf("Suma je veca od 50 %d", suma);
+            printf("Suma je veca od 50 %d\n", suma);
         
         if(suma>250){
             sem_post(&drugaNit);
