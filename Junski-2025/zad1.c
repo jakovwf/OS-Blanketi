@@ -25,11 +25,14 @@ void* brojevi(void* arg){
         if(suma>250){
             break;
         }
+        printf("Buffer:");
         for(int i=0;i<SIZE;i++){
             buffer[i]=rand()%100;
+            printf("%d ",buffer[i]);
         }
         sem_post(&prvaNit);
     }
+    sleep(1);
     return NULL;
 
 }
@@ -47,15 +50,17 @@ int main(void){
         for(int i=0;i<SIZE;i++)
             suma+=buffer[i];
             if(suma<50)
-                printf("Suma je manja od 50 %d\n", suma);
+                printf("Suma je manja od 50\n %d\n", suma);
             else
-            printf("Suma je veca od 50 %d\n", suma);
+            printf("Suma je veca od 50\n %d\n", suma);
         
         if(suma>250){
+            printf("Suma je veca od 250\n %d\n", suma);
             sem_post(&drugaNit);
             break;
         }
         sem_post(&drugaNit);
+        sleep(1);
     }
     pthread_join(nit, NULL);
     sem_destroy(&drugaNit);
