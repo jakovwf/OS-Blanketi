@@ -1,0 +1,13 @@
+fajl.txt(linija 0):Daki
+fajl1.txt (linija 0): Mitrije
+fajl.txt(linija 1):jebo 
+fajl1.txt (linija 1): je
+fajl.txt(linija 2):ga 
+fajl1.txt (linija 2): pickica
+fajl.txt(linija 3):svaki
+fajl1.txt (linija 3): bem 
+fajl.txt(linija 4):Daki
+fajl1.txt (linija 4): ga
+fajl.txt(linija 5):specijalac
+fajl1.txt (linija 5): usta
+fajl.txt(linija 6):
