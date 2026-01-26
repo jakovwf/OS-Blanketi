@@ -10,3 +10,4 @@ fajl.txt(linija 4):Daki
 fajl1.txt (linija 4): ga
 fajl.txt(linija 5):specijalac
 fajl1.txt (linija 5): usta
+fajl.txt(linija 6):

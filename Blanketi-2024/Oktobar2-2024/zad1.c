@@ -6,6 +6,13 @@
 
 #define LEN 256
 
+//bitno je koji se fajl navodi prvi zato sto mora ili da ima jednako linija ili jedna vise za prvi fajl koji se cita
+//zato sto cim bude izaslo iz while nece uopste nista ispisati nista i doci ce do toga da fali jedan red...
+//ovo moze da se resi time sto se osigura da program kada izadje ispise makar nesto i da ne prebacuje kraj na 1
+//ali gubljenje je vremena i mislim da je nepotrebno ici toliko u dubinu...
+//TEST - ./zad1  fajl1.txt  fajl.txt
+//TEST KADA NECE RADITI SKROZ PRAVILNO - ./zad1  fajl.txt  fajl1.txt
+
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;  //umesto ovoga ide pthread_mutex_initi(...)
 pthread_cond_t cond_parni = PTHREAD_COND_INITIALIZER;//umesto ovoga ide pthread_cond_init(...)
 pthread_cond_t cond_neparni = PTHREAD_COND_INITIALIZER;
