@@ -1,98 +1,147 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<semaphore.h>
 #include<pthread.h>
 #include<string.h>
-#include<sys/wait.h>
 #include<unistd.h>
 
 #define LEN 256
 
-sem_t parni, neparni;
-int kraj;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;  //umesto ovoga ide pthread_mutex_initi(...)
+pthread_cond_t cond_parni = PTHREAD_COND_INITIALIZER;//umesto ovoga ide pthread_cond_init(...)
+pthread_cond_t cond_neparni = PTHREAD_COND_INITIALIZER;
+pthread_t nit1,nit2;
+int trenutna_nit = 1; // 1 = prva nit (parni), 2 = druga nit (neparni)
+int kraj = 0;
 
-void* citajizPrve(void* arg){
-    char* ImeFajla=(char*)arg;
+void* citajPrviFajl(void* arg){
+    char* imeFajla = (char*)arg;
 
-    FILE *f=fopen(ImeFajla, "r");
-    if(f==0){
+    FILE *f = fopen(imeFajla, "r");
+    if(f == NULL){
+        printf("Ne mogu da otvorim fajl: %s\n", imeFajla);
         exit(1);
     }
+    
     char linija[LEN];
-    int brlinije=1;
-    while(fgets(linija, LEN, f)!=NULL){
-        if(brlinije%2==0){
+    int brlinije = 0;
+    
+    while(fgets(linija, LEN, f) != NULL){
+        pthread_mutex_lock(&mutex);
         
-        sem_wait(&parni);
+        // Čekamo dok ne dođe red na parnu liniju
+        while(trenutna_nit != 1 && !kraj){
+            pthread_cond_wait(&cond_parni, &mutex);
+        }
+        
         if(kraj){
+            pthread_mutex_unlock(&mutex);
             break;
         }
+        
+        // Ispis u konzolu
         printf("%s", linija);
-        FILE *f1=fopen("zbir.txt", "a");
-        fprintf(f1, "%s(linija %d):%s", ImeFajla, brlinije, linija);
+        
+        // Upis u fajl (parne linije)
+        FILE *f1 = fopen("zbir.txt", "a");
+        fprintf(f1, "%s(linija %d):%s", imeFajla, brlinije, linija);
         fclose(f1);
-         sem_post(&neparni);
-    }
+        
+        sleep(1);
+        
+        // Sada je red na drugu nit (neparne linije)
+        trenutna_nit = 2;
         brlinije++;
-}
-    kraj=1;
-    sem_post(&neparni);
+        
+        // Budimo drugu nit
+        pthread_cond_signal(&cond_neparni);
+        pthread_mutex_unlock(&mutex);
+    }
+    
+    pthread_mutex_lock(&mutex);
+    kraj = 1;
+    pthread_cond_signal(&cond_neparni); // Budimo drugu nit ako čeka
+    pthread_mutex_unlock(&mutex);
+    
     fclose(f);
+    return NULL;
 }
-void* citajDrugu(void* arg){
-    char* imeFajla=(char*)arg;
 
-    FILE *f=fopen(imeFajla,"r");
+void* citajDrugiFajl(void* arg){
+    char* imeFajla = (char*)arg;
 
-    if(f==0){
+    FILE *f = fopen(imeFajla, "r");
+    if(f == NULL){
+        printf("Ne mogu da otvorim fajl: %s\n", imeFajla);
         exit(1);
     }
+    
     char linija[LEN];
-    int brlinije=1;
-    while(fgets(linija, LEN, f)!=NULL){
-        if(brlinije%2==1){
-        sem_wait(&neparni);
-
+    int brlinije = 0;
+    
+    while(fgets(linija, LEN, f) != NULL){
+        pthread_mutex_lock(&mutex);
+        
+        // Čekamo dok ne dođe red na neparnu liniju
+        while(trenutna_nit != 2 && !kraj){
+            pthread_cond_wait(&cond_neparni, &mutex);
+        }
+        
         if(kraj){
+            pthread_mutex_unlock(&mutex);
             break;
         }
+        
+        // Ispis u konzolu
         printf("%s", linija);
-
-        FILE*f1=fopen("zbir.txt", "a");
-
+        
+        // Upis u fajl (neparne linije)
+        FILE *f1 = fopen("zbir.txt", "a");
         fprintf(f1, "%s (linija %d): %s", imeFajla, brlinije, linija);
-
         fclose(f1);
-        sem_post(&parni);
-    }
-
+        
+        sleep(1);
+        
+        // Sada je red na prvu nit (parne linije)
+        trenutna_nit = 1;
         brlinije++;
+        
+        // Budimo prvu nit
+        pthread_cond_signal(&cond_parni);
+        pthread_mutex_unlock(&mutex);
     }
-    kraj=1;
-    sem_post(&parni);
+    
+    pthread_mutex_lock(&mutex);
+    kraj = 1;
+    pthread_cond_signal(&cond_parni); // Budimo prvu nit ako čeka
+    pthread_mutex_unlock(&mutex);
+    
     fclose(f);
+    return NULL;
 }
-int main(int argc, char* argv[]){
 
-    if(argc!=3){
-        printf("Neodgovarajuci broj argumenata");
+int main(int argc, char* argv[]){
+    if(argc != 3){
+        printf("Neodgovarajuci broj argumenata\n");
+        printf("Upotreba: %s fajl1.txt fajl2.txt\n", argv[0]);
         exit(1);
     }
 
-    sem_init(&parni, 0, 0);
-    sem_init(&neparni, 0, 1);
-
-    pthread_t nit1,nit2;
-
-    pthread_create(&nit1, NULL, (void*)citajizPrve, (void*)argv[1]);
-    pthread_create(&nit2, NULL, (void*)citajDrugu, (void*)argv[2]);
+    // Obriši postojeći zbir.txt
+    remove("zbir.txt");
+    
+    // Kreiraj niti
+    // Prva nit (parni) čita PRVI fajl (argv[1])
+    // Druga nit (neparni) čita DRUGI fajl (argv[2])
+    pthread_create(&nit1, NULL, citajPrviFajl, argv[1]);
+    pthread_create(&nit2, NULL, citajDrugiFajl, argv[2]);
 
     pthread_join(nit1, NULL);
     pthread_join(nit2, NULL);
 
-    sem_destroy(&parni);
-    sem_destroy(&neparni);
+    // Uništi mutex i uslovne promenljive
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&cond_parni);
+    pthread_cond_destroy(&cond_neparni);
 
     return 0;
-
 }
