@@ -7,44 +7,35 @@
 
 sem_t prvi,drugi;
 pthread_t prva ,druga;
-int N,i=1,kraj=0;
+int N,i=1;
 int deljivSaSedam;
 
 
 void*prvaStampa(void*arg){
     
-
-    while(1){
+    while(i<=N){
         sem_wait(&prvi);
-    
-        if(i%7==0){
+        sleep(1);
+        if(i%7==0&&i<=N){
             printf("Deljiv sa 7: %d\n ",i++);
         }
-        if(i==N||kraj==1){
-            kraj=1;
-            sem_post(&drugi);
-            break;
-        }
         sem_post(&drugi);
-        
     }
+    sem_post(&drugi);
     return NULL;
 }
 void*drugaStampa(void*arg){
 
     
-    while(kraj!=1){
+    while(i<=N){
         sem_wait(&drugi);
-        while(i%7!=0&&i<N){
+        while(i%7!=0&&i<=N){
+            sleep(1);
             printf("Broj:%d\n ",i++);
-        }
-        if(i==N){
-            kraj=1;
-            sem_post(&prvi);
-            break;
         }
         sem_post(&prvi);
     }
+    sem_post(&prvi);
     return NULL;
 }
 
