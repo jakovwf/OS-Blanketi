@@ -46,6 +46,7 @@ int main()
 
         close(pd1[1]);
         close(pd2[0]);
+        wait(NULL);
     }
     else{
 
@@ -68,6 +69,7 @@ int main()
         
         close(pd1[0]);
         close(pd2[1]);
+        exit(1);
     }
 
     return 0;
