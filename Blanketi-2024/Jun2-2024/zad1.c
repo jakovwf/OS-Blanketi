@@ -3,6 +3,16 @@
 #include<semaphore.h>
 #include<pthread.h>
 #include<unistd.h>
+#include "nit1.h"
+#include "nit2.h"
+
+
+//PEONTA NITI JE DA SE ONE IZVRSAVAJU PARALELNO ILI KVAZIPARALELNO 
+//AKO JE VEC TAKO ZASTO NE BISMO, RADI PREGLEDNOSTI, ODVOJILI OVE FAJLOVE
+//U ZASEBNE .H FAJLOVE, KOMPAJLIRAMO SVE FAJLOVE I UKLJUCIMO U FAJL GDE JE MAIN FJA
+
+
+
 
 
 sem_t prvi,drugi;
@@ -11,33 +21,6 @@ int N,i=1;
 int deljivSaSedam;
 
 
-void*prvaStampa(void*arg){
-    
-    while(i<=N){
-        sem_wait(&prvi);
-        sleep(1);
-        if(i%7==0&&i<=N){
-            printf("Deljiv sa 7: %d\n ",i++);
-        }
-        sem_post(&drugi);
-    }
-    sem_post(&drugi);
-    return NULL;
-}
-void*drugaStampa(void*arg){
-
-    
-    while(i<=N){
-        sem_wait(&drugi);
-        while(i%7!=0&&i<=N){
-            sleep(1);
-            printf("Broj:%d\n ",i++);
-        }
-        sem_post(&prvi);
-    }
-    sem_post(&prvi);
-    return NULL;
-}
 
 int main(int argc,char*argv[]){
     
