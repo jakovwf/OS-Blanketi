@@ -1,2 +1,1 @@
-# OS-Blanketi
-# OS-Blanketi
+# Reseni blanketi iz predmeta OPERATIVNI SISTEMI
